@@ -1,25 +1,45 @@
+"""
+AIDecision/detector.py
+=======================
+Détecte l'intention de l'utilisateur → action + cible + outils.
+Utilise Claude (Anthropic).
+"""
+
 import json
-from openai import OpenAI
-from dotenv import load_dotenv
 import os
+import anthropic
+from dotenv import load_dotenv
 
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
 
 def detect_intent(user_input: str) -> dict:
-    response = client.chat.completions.create(
-        model="gpt-4",
-        messages=[{
-            "role": "system",
-            "content": """Tu es un assistant cybersécurité.
-            Analyse la demande et retourne UNIQUEMENT un JSON valide :
-            {"action": "scan", "target": "IP_ou_domaine", "tool": "nmap"}
-            Actions possibles : scan, whois, ping"""
-        },
-        {
-            "role": "user",
-            "content": user_input
-        }]
+    """
+    Input  : "scan 192.168.1.1"
+    Output : {"action": "scan", "target": "192.168.1.1", "tools": ["nmap"]}
+
+    Actions : scan, brute, web, ssl, full
+    """
+    response = client.messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=200,
+        system="""Tu es un assistant cybersécurité.
+Retourne UNIQUEMENT un JSON valide sans texte avant ni après :
+{"action": "scan", "target": "IP_ou_domaine", "tools": ["nmap"]}
+
+Actions possibles :
+- "scan"  → nmap
+- "brute" → hydra
+- "web"   → nikto
+- "ssl"   → ssl
+- "full"  → nmap, hydra, nikto, ssl
+
+Si la cible n'est pas mentionnée, mets "target": null.""",
+        messages=[{"role": "user", "content": user_input}]
     )
-    result = response.choices[0].message.content
-    return json.loads(result)
+    texte = response.content[0].text.strip().replace("```json","").replace("```","").strip()
+    try:
+        return json.loads(texte)
+    except json.JSONDecodeError:
+        return {"action": "scan", "target": None, "tools": ["nmap"]}
