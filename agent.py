@@ -2,26 +2,26 @@
 ai/agent.py - L'agent IA (Sara + Fafa)
 =========================================
 Responsabilités :
-  1. AI Logic   → décider quelle action lancer selon la demande
-  2. AI Explain → transformer les résultats JSON en rapport humain
+    1. AI Logic   → décider quelle action lancer selon la demande
+    2. AI Explain → transformer les résultats JSON en rapport humain
 """
 
 import os
 import json
 import anthropic
 
-# ─── Import des parsers (Sara + Raouf) ────────────────────────────────────────
+# ─── Import des parsers  ────────────────────────────────────────
 from parser.nmap_parser    import parser_nmap
 from parser.hydra_parser   import parser_hydra
 from parser.nikto_parser   import parser_nikto
 
-# ─── Import des outils backend (Wail) ─────────────────────────────────────────
+# ─── Import des outils backend  ─────────────────────────────────────────
 # Ces fonctions seront codées par Wail — elles retournent du texte brut
 from pentest.nmap_scanner  import run_nmap
 from pentest.hydra_attack  import run_hydra
 from pentest.nikto_scanner import run_nikto
 
-# ─── Import analyse chiffrement (Sara — ton ancien projet) ────────────────────
+# ─── Import analyse chiffrement  ────────────────────
 from crypto.ssl_analyzer   import analyser_ssl
 
 
@@ -46,10 +46,10 @@ class CyberAgent:
         la liste des outils à lancer.
 
         Exemples :
-          "scan 192.168.1.1"          → ['nmap']
-          "test SSH passwords"        → ['nmap', 'hydra']
-          "full security check"       → ['nmap', 'hydra', 'nikto', 'ssl']
-          "check website"             → ['nikto', 'ssl']
+            "scan 192.168.1.1"          → ['nmap']
+            "test SSH passwords"        → ['nmap', 'hydra']
+            "full security check"       → ['nmap', 'hydra', 'nikto', 'ssl']
+            "check website"             → ['nikto', 'ssl']
         """
         prompt = f"""
 Tu es un assistant cybersécurité. L'utilisateur demande :
@@ -125,20 +125,20 @@ Résultats bruts (JSON) :
 
 Génère un rapport de sécurité structuré en JSON avec EXACTEMENT ce format :
 {{
-  "score_global": <entier 0-100>,
-  "niveau_risque": "<CRITIQUE | ÉLEVÉ | MOYEN | FAIBLE>",
-  "resume": "<2-3 phrases résumant la situation en français>",
-  "vulnerabilites": [
+    "score_global": <entier 0-100>,
+    "niveau_risque": "<CRITIQUE | ÉLEVÉ | MOYEN | FAIBLE>",
+    "resume": "<2-3 phrases résumant la situation en français>",
+    "vulnerabilites": [
     {{
-      "titre": "<nom de la vulnérabilité>",
-      "criticite": "<CRITIQUE | ÉLEVÉE | MOYENNE | FAIBLE>",
-      "description": "<explication simple>",
-      "recommandation": "<que faire concrètement>"
+        "titre": "<nom de la vulnérabilité>",
+        "criticite": "<CRITIQUE | ÉLEVÉE | MOYENNE | FAIBLE>",
+        "description": "<explication simple>",
+        "recommandation": "<que faire concrètement>"
     }}
-  ],
-  "points_positifs": ["<ce qui est bien sécurisé>"],
-  "score_chiffrement": <entier 0-100>,
-  "analyse_chiffrement": "<évaluation du chiffrement SSL/TLS utilisé>"
+    ],
+    "points_positifs": ["<ce qui est bien sécurisé>"],
+    "score_chiffrement": <entier 0-100>,
+    "analyse_chiffrement": "<évaluation du chiffrement SSL/TLS utilisé>"
 }}
 
 Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.
